@@ -1,0 +1,71 @@
+/*
+yandex cloud
+1 x 4GB RAM 20% hdd 15Gb
+*/
+#### Task list
+
+- [x] install tarantool + run
+- [x] select
+- [x] update
+- [x] BOX EXECUTE
+- [x] BOX EXECUTE + check box.execute + box.space.table.select
+
+# install tarantool + run
+curl -L https://tarantool.io/dGDepKL/release/2/installer.sh | bash
+sudo apt-get -y install tarantool
+
+>tarantool
+
+box.cfg {listen = 3311}
+
+box.schema.create_space('example')
+box.schema.example:create_index('primary')
+
+box.schema.user.create('u', { password = 'u' })
+
+# select
+box.space.example:select({})
+[]
+
+--CREATE ROWS
+for i = 25,16,-1
+do
+   box.space.example:insert({i,"test"})
+end
+
+--select ALL ROWS
+box.space.example:select({})
+[....
+....
+...]
+
+# update
+box.space.example:Update({2}, {{'=', 2, 'B'}})
+--error method Update
+
+box.space.example:update({2}, {{'=', 2, 'B'}})
+--OK
+  - [2, 'B']
+
+
+# BOX EXECUTE
+box.execute([[create table t1 (i integer, b varchar(10), primary key(i));]])
+- row_count: 1
+box.execute([[insert into t1 select 1,'123']])
+- row_count: 1
+box.space.t1:select({})
+error: '[string "return box.space.t1:select({})"]:1: attempt to index field ''t1''
+    (a nil value)'
+
+box.execute([[SELECT * FROM  t1;]])
+
+- metadata:
+  - name: I
+    type: integer
+  - name: B
+    type: string
+  rows:
+  - [1, '123']
+  - [2, '222']
+  - [3, '333']
+...
